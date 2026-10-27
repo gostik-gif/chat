@@ -1,1 +1,598 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Артем — Портфолио</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-main: #0c1317;
+            --bg-side: #111b21;
+            --bg-chat: #0b141a;
+            --header-bg: #202c33;
+            --incoming-msg: #202c33;
+            --outgoing-msg: #005c4b;
+            --text-primary: #e9edef;
+            --text-secondary: #8696a0;
+            --accent: #00a884;
+            --accent-hover: #06cf9c;
+            --border-color: #222d34;
+            --chat-pattern: rgba(255, 255, 255, 0.03);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #111b21;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            max-width: 1600px;
+            display: flex;
+            background-color: var(--bg-side);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 380px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-side);
+            z-index: 2;
+        }
+
+        .user-header {
+            height: 60px;
+            background-color: var(--header-bg);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00a884, #128c7e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .nav-tabs {
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .tab-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .tab-item:hover {
+            background-color: #202c33;
+        }
+
+        .tab-item.active {
+            background-color: #2a3942;
+        }
+
+        .tab-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-right: 15px;
+            background-color: #2a3942;
+            color: var(--accent);
+        }
+
+        .tab-details {
+            flex: 1;
+        }
+
+        .tab-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tab-subtitle {
+            font-size: 13px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 220px;
+        }
+
+        .unread-badge {
+            background-color: var(--accent);
+            color: #111;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        /* Chat Area */
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--bg-chat);
+            position: relative;
+        }
+
+        .chat-bg-pattern {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.06;
+            background-image: radial-gradient(#fff 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+        }
+
+        .chat-header {
+            height: 60px;
+            background-color: var(--header-bg);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .chat-header-info {
+            margin-left: 15px;
+        }
+
+        .chat-header-name {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .chat-header-status {
+            font-size: 12px;
+            color: var(--accent);
+        }
+
+        .messages-container {
+            flex: 1;
+            padding: 20px 5%;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 5;
+        }
+
+        .msg {
+            max-width: 65%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14.5px;
+            line-height: 1.4;
+            position: relative;
+            word-wrap: break-word;
+            box-shadow: 0 1px 0.5px rgba(11,20,26,.13);
+        }
+
+        .msg-incoming {
+            background-color: var(--incoming-msg);
+            align-self: flex-start;
+            border-top-left-radius: 0;
+        }
+
+        .msg-outgoing {
+            background-color: var(--outgoing-msg);
+            align-self: flex-end;
+            border-top-right-radius: 0;
+        }
+
+        .msg-time {
+            font-size: 11px;
+            color: var(--text-secondary);
+            float: right;
+            margin-top: 4px;
+            margin-left: 12px;
+        }
+
+        .msg-outgoing .msg-time {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .ticks {
+            color: #53bdeb;
+            margin-left: 3px;
+        }
+
+        /* Gallery view inside chat */
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .media-card {
+            background: #182229;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .media-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .media-card-title {
+            padding: 8px;
+            font-size: 13px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        /* Contacts view */
+        .contact-card {
+            background: #182229;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .phone-num {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent);
+            text-align: center;
+            letter-spacing: 1px;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            background-color: var(--accent);
+            color: #111;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Footer Input Area */
+        .chat-footer {
+            height: 62px;
+            background-color: var(--header-bg);
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .input-box {
+            flex: 1;
+            background-color: #2a3942;
+            border-radius: 8px;
+            padding: 9px 12px;
+            color: var(--text-primary);
+            border: none;
+            outline: none;
+            font-size: 15px;
+        }
+
+        .send-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .send-btn.active {
+            color: var(--accent);
+        }
+
+        /* Responsive Mobile */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                display: flex;
+            }
+            .chat-area {
+                display: none;
+                width: 100%;
+            }
+            .app-container.show-chat .sidebar {
+                display: none;
+            }
+            .app-container.show-chat .chat-area {
+                display: flex;
+            }
+            .back-btn {
+                display: block !important;
+                margin-right: 10px;
+                font-size: 18px;
+                cursor: pointer;
+            }
+            .msg {
+                max-width: 85%;
+            }
+        }
+
+        .back-btn {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="user-header">
+            <div class="avatar"><i class="fa-solid fa-code"></i></div>
+            <span style="font-weight: 500;">Артем | Dev</span>
+            <div style="color: var(--text-secondary);"><i class="fa-solid fa-ellipsis-vertical"></i></div>
+        </div>
+        
+        <div class="nav-tabs">
+            <div class="tab-item active" onclick="switchTab('about')">
+                <div class="tab-icon"><i class="fa-solid fa-user"></i></div>
+                <div class="tab-details">
+                    <div class="tab-title">О себе (Артем) <span style="font-size: 11px; color: var(--text-secondary);">12:00</span></div>
+                    <div class="tab-subtitle">Привет! Я хочу быть программистом</div>
+                </div>
+                <span class="unread-badge">1</span>
+            </div>
+
+            <div class="tab-item" onclick="switchTab('gallery')">
+                <div class="tab-icon"><div class="avatar" style="width:100%; height:100%; font-size:16px;">📷</div></div>
+                <div class="tab-details">
+                    <div class="tab-title">Галерея проектов <span style="font-size: 11px; color: var(--text-secondary);">11:45</span></div>
+                    <div class="tab-subtitle">Скриншоты и изображения</div>
+                </div>
+            </div>
+
+            <div class="tab-item" onclick="switchTab('contacts')">
+                <div class="tab-icon" style="color: #00a884;"><i class="fa-solid fa-phone"></i></div>
+                <div class="tab-details">
+                    <div class="tab-title">Контакты <span style="font-size: 11px; color: var(--text-secondary);">10:30</span></div>
+                    <div class="tab-subtitle">+7 771 522 06 75</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="chat-area">
+        <div class="chat-bg-pattern"></div>
+        
+        <div class="chat-header">
+            <i class="fa-solid fa-arrow-left back-btn" onclick="closeChat()"></i>
+            <div class="avatar" id="current-chat-avatar">А</div>
+            <div class="chat-header-info">
+                <div class="chat-header-name" id="current-chat-title">О себе (Артем)</div>
+                <div class="chat-header-status">в сети</div>
+            </div>
+        </div>
+
+        <div class="messages-container" id="messages-container">
+            <!-- Content dynamically rendered -->
+        </div>
+
+        <div class="chat-footer">
+            <i class="fa-regular fa-face-smile" style="font-size: 22px; color: var(--text-secondary); cursor: pointer;"></i>
+            <input type="text" class="input-box" id="msg-input" placeholder="Введите сообщение..." oninput="checkInput()">
+            <button class="send-btn" id="send-btn" onclick="sendMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const pages = {
+        about: {
+            title: "О себе (Артем)",
+            avatar: "👨‍💻",
+            messages: [
+                { type: "incoming", text: "Привет! Меня зовут **Артем** 👋", time: "12:00" },
+                { type: "incoming", text: "Моя главная цель — стать профессиональным **программистом**! 🚀", time: "12:01" },
+                { type: "incoming", text: "Я изучаю разработку сайтов, работу с GitHub, создаю интересные проекты и постоянно учусь новому.", time: "12:02" },
+                { type: "outgoing", text: "Круто! Какими технологиями увлекаешься?", time: "12:03" },
+                { type: "incoming", text: "Мне нравятся HTML, CSS, JavaScript и создание удобных веб-интерфейсов!", time: "12:04" }
+            ]
+        },
+        gallery: {
+            title: "Галерея проектов",
+            avatar: "🖼️",
+            messages: [
+                { type: "incoming", text: "Вот несколько примеров стилей и концептов моих будущих проектов:", time: "11:45" },
+                { 
+                    type: "incoming", 
+                    customHtml: `
+                        <div class="media-grid">
+                            <div class="media-card">
+                                <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400" alt="Code">
+                                <div class="media-card-title">Веб-разработка</div>
+                            </div>
+                            <div class="media-card">
+                                <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400" alt="Gaming">
+                                <div class="media-card-title">Игровые интерфейсы</div>
+                            </div>
+                        </div>
+                    `,
+                    time: "11:46" 
+                }
+            ]
+        },
+        contacts: {
+            title: "Контакты для связи",
+            avatar: "📞",
+            messages: [
+                { type: "incoming", text: "Со мной всегда можно связаться по телефону или в мессенджерах!", time: "10:30" },
+                { 
+                    type: "incoming", 
+                    customHtml: `
+                        <div class="contact-card">
+                            <div style="text-align:center; color: var(--text-secondary); font-size:13px;">Телефон / WhatsApp:</div>
+                            <div class="phone-num">+7 771 522 06 75</div>
+                            <div class="action-btns">
+                                <a href="https://wa.me/77715220675" target="_blank" class="btn"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                                <a href="tel:+77715220675" class="btn" style="background-color: #34b7f1; color:#fff;"><i class="fa-solid fa-phone"></i> Позвонить</a>
+                            </div>
+                        </div>
+                    `,
+                    time: "10:31" 
+                }
+            ]
+        }
+    };
+
+    let currentTab = 'about';
+
+    function renderMessages() {
+        const container = document.getElementById('messages-container');
+        container.innerHTML = '';
+        
+        const data = pages[currentTab];
+        document.getElementById('current-chat-title').innerText = data.title;
+        document.getElementById('current-chat-avatar').innerText = data.avatar;
+
+        data.messages.forEach(msg => {
+            const div = document.createElement('div');
+            div.className = `msg msg-${msg.type}`;
+            
+            let content = msg.text ? msg.text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') : '';
+            if (msg.customHtml) content += msg.customHtml;
+
+            const ticks = msg.type === 'outgoing' ? '<span class="ticks"><i class="fa-solid fa-check-double"></i></span>' : '';
+            
+            div.innerHTML = `
+                ${content}
+                <span class="msg-time">${msg.time} ${ticks}</span>
+            `;
+            container.appendChild(div);
+        });
+
+        container.scrollTop = container.scrollHeight;
+    }
+
+    function switchTab(tabKey) {
+        currentTab = tabKey;
+        document.querySelectorAll('.tab-item').forEach((el, index) => {
+            el.classList.toggle('active', (tabKey === 'about' && index === 0) || (tabKey === 'gallery' && index === 1) || (tabKey === 'contacts' && index === 2));
+        });
+        
+        document.getElementById('app').classList.add('show-chat');
+        renderMessages();
+    }
+
+    function closeChat() {
+        document.getElementById('app').classList.remove('show-chat');
+    }
+
+    function checkInput() {
+        const val = document.getElementById('msg-input').value;
+        const btn = document.getElementById('send-btn');
+        btn.classList.toggle('active', val.trim().length > 0);
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('msg-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        const now = new Date();
+        const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+        pages[currentTab].messages.push({
+            type: 'outgoing',
+            text: text,
+            time: timeStr
+        });
+
+        input.value = '';
+        checkInput();
+        renderMessages();
+
+        // Auto answer
+        setTimeout(() => {
+            pages[currentTab].messages.push({
+                type: 'incoming',
+                text: 'Спасибо за сообщение! Свяжитесь со мной по номеру **+7 771 522 06 75** 🚀',
+                time: timeStr
+            });
+            renderMessages();
+        }, 1000);
+    }
+
+    document.getElementById('msg-input').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Initialize
+    renderMessages();
+</script>
+
+</body>
+</html>
 
