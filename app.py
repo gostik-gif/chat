@@ -1,11 +1,8 @@
 import os
-import base64
 from flask import Flask, render_template, request, jsonify
-from flask_socketio import SocketIO, emit, join_room
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'family-secret-key-1234'
-socketio = SocketIO(app, cors_allowed_origins="*", max_http_buffer_size=50 * 1024 * 1024)
 
 # База данных в памяти
 CHATS = [
@@ -14,7 +11,7 @@ CHATS = [
         'title': 'Семейный Чат',
         'members': ['papa', 'mama', 'artem'],
         'messages': [
-            {'sender': 'artem', 'text': 'Привет всем! Чат на Render работает!', 'time': '12:00'}
+            {'sender': 'artem', 'text': 'Привет всем! Чат работает!', 'time': '12:00'}
         ]
     }
 ]
@@ -29,23 +26,25 @@ USERS = {
 def index():
     return render_template('index.html')
 
-@socketio.on('login')
-def handle_login(data):
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.json
     user_key = data.get('userKey')
     password = data.get('password')
     if user_key in USERS and USERS[user_key]['pass'] == password:
-        emit('login_response', {'success': True, 'userKey': user_key, 'userData': USERS[user_key]})
-    else:
-        emit('login_response', {'success': False, 'message': 'Неверный пароль'})
+        return jsonify({'success': True, 'userData': USERS[user_key]})
+    return jsonify({'success': False, 'message': 'Неверный пароль'})
 
-@socketio.on('get_chats')
-def handle_get_chats(data):
+@app.route('/api/chats', methods=['POST'])
+def api_get_chats():
+    data = request.json
     user_key = data.get('userKey')
     user_chats = [c for c in CHATS if user_key in c['members']]
-    emit('chats_list', user_chats)
+    return jsonify({'success': True, 'chats': user_chats})
 
-@socketio.on('create_chat')
-def handle_create_chat(data):
+@app.route('/api/create_chat', methods=['POST'])
+def api_create_chat():
+    data = request.json
     members = data.get('members', [])
     title = data.get('title', 'Новый чат')
     chat_id = f"chat_{len(CHATS) + 1}"
@@ -56,10 +55,11 @@ def handle_create_chat(data):
         'messages': []
     }
     CHATS.append(new_chat)
-    emit('chat_created', new_chat, broadcast=True)
+    return jsonify({'success': True, 'chat': new_chat})
 
-@socketio.on('send_message')
-def handle_send_message(data):
+@app.route('/api/send_message', methods=['POST'])
+def api_send_message():
+    data = request.json
     chat_id = data.get('chatId')
     sender = data.get('sender')
     text = data.get('text', '')
@@ -77,8 +77,9 @@ def handle_send_message(data):
             'time': time_str
         }
         chat['messages'].append(msg_obj)
-        emit('new_message', {'chatId': chat_id, 'message': msg_obj}, broadcast=True)
+        return jsonify({'success': True})
+    return jsonify({'success': False, 'message': 'Чат не найден'})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port)
