@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Семейный WhatsApp (Render)</title>
+    <title>Семейный WhatsApp</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <style>
         :root {
             --bg-side: #111b21; --bg-chat: #0b141a; --header-bg: #202c33;
@@ -16,20 +15,18 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
         body { background: #111b21; color: var(--text-primary); display: flex; height: 100vh; overflow: hidden; }
         
-        /* Auth Screen */
         .login-overlay { position: fixed; inset: 0; background: rgba(11,20,26,0.95); z-index: 100; display: flex; justify-content: center; align-items: center; }
-        .login-card { background: #202c33; padding: 30px; border-radius: 12px; width: 340px; text-align: center; }
+        .login-card { background: #202c33; padding: 30px; border-radius: 12px; width: 340px; text-align: center; border: 1px solid var(--border-color); }
         .user-select { display: flex; gap: 8px; margin: 20px 0; }
         .u-btn { flex: 1; padding: 10px 4px; background: #111b21; border: 2px solid var(--border-color); border-radius: 8px; color: #fff; cursor: pointer; font-size: 12px; }
         .u-btn.active { border-color: var(--accent); background: #182229; }
-        .input-field { width: 100%; padding: 10px; margin-bottom: 15px; background: #111b21; border: 1px solid var(--border-color); color: #fff; border-radius: 6px; }
-        .btn-submit { width: 100%; padding: 10px; background: var(--accent); border: none; font-weight: bold; border-radius: 6px; cursor: pointer; }
+        .input-field { width: 100%; padding: 10px; margin-bottom: 15px; background: #111b21; border: 1px solid var(--border-color); color: #fff; border-radius: 6px; outline: none; }
+        .btn-submit { width: 100%; padding: 10px; background: var(--accent); border: none; font-weight: bold; border-radius: 6px; cursor: pointer; color: #111; }
 
-        /* App Layout */
         .app-container { display: flex; width: 100%; height: 100%; }
         .sidebar { width: 340px; border-right: 1px solid var(--border-color); display: flex; flex-direction: column; background: var(--bg-side); }
         .header { height: 60px; background: var(--header-bg); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; }
-        .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #111; }
+        .avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 18px; color: #111; font-weight: bold; }
         
         .chat-list { flex: 1; overflow-y: auto; }
         .chat-item { padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; display: flex; align-items: center; gap: 12px; }
@@ -49,20 +46,18 @@
         .icon-btn.recording { color: #ea4335; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.3; } }
 
-        /* Emoji Picker Overlay */
-        .emoji-picker { position: absolute; bottom: 70px; left: 10px; background: #202c33; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; display: none; grid-template-columns: repeat(6, 1fr); gap: 8px; font-size: 22px; z-index: 50; }
+        .emoji-picker { position: absolute; bottom: 70px; left: 10px; background: #202c33; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; display: none; grid-template-columns: repeat(4, 1fr); gap: 8px; font-size: 22px; z-index: 50; }
         .emoji-picker span { cursor: pointer; text-align: center; }
 
-        /* Modal */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 90; display: none; justify-content: center; align-items: center; }
-        .modal-body { background: #202c33; padding: 20px; border-radius: 8px; width: 280px; }
+        .modal-body { background: #202c33; padding: 20px; border-radius: 8px; width: 280px; border: 1px solid var(--border-color); }
     </style>
 </head>
 <body>
 
 <div class="login-overlay" id="loginOverlay">
     <div class="login-card">
-        <h3 style="color:var(--accent); margin-bottom:15px;">Семейный Вход</h3>
+        <h3 style="color:var(--accent); margin-bottom:15px;"><i class="fa-brands fa-whatsapp"></i> Семейный Вход</h3>
         <div class="user-select">
             <button class="u-btn active" onclick="setUser('papa', this)">👨 Папа</button>
             <button class="u-btn" onclick="setUser('mama', this)">👩 Мама</button>
@@ -75,12 +70,12 @@
 
 <div class="modal" id="newChatModal">
     <div class="modal-body">
-        <h4 style="margin-bottom: 10px;">Создать чат</h4>
-        <label style="display:block; margin-bottom: 5px;"><input type="checkbox" value="papa" class="user-chk"> 👨 Папа</label>
-        <label style="display:block; margin-bottom: 5px;"><input type="checkbox" value="mama" class="user-chk"> 👩 Мама</label>
-        <label style="display:block; margin-bottom: 10px;"><input type="checkbox" value="artem" class="user-chk"> 👨‍💻 Артем</label>
+        <h4 style="margin-bottom: 10px; color:var(--accent);">Создать чат</h4>
+        <label style="display:block; margin-bottom: 8px;"><input type="checkbox" value="papa" class="user-chk"> 👨 Папа</label>
+        <label style="display:block; margin-bottom: 8px;"><input type="checkbox" value="mama" class="user-chk"> 👩 Мама</label>
+        <label style="display:block; margin-bottom: 15px;"><input type="checkbox" value="artem" class="user-chk"> 👨‍💻 Артем</label>
         <button class="btn-submit" onclick="confirmNewChat()">Создать</button>
-        <button class="btn-submit" style="background:#555; color:#fff; margin-top:5px;" onclick="closeModal()">Отмена</button>
+        <button class="btn-submit" style="background:#444; color:#fff; margin-top:8px;" onclick="closeModal()">Отмена</button>
     </div>
 </div>
 
@@ -105,8 +100,6 @@
         <div class="emoji-picker" id="emojiPicker">
             <span onclick="addEmoji('😀')">😀</span><span onclick="addEmoji('😂')">😂</span>
             <span onclick="addEmoji('👍')">👍</span><span onclick="addEmoji('❤️')">❤️</span>
-            <span onclick="addEmoji('🔥')">🔥</span><span onclick="addEmoji('🎉')">🎉</span>
-            <span onclick="addEmoji('💻')">💻</span><span onclick="addEmoji('🚀')">🚀</span>
         </div>
 
         <div class="footer">
@@ -121,13 +114,11 @@
 </div>
 
 <script>
-    const socket = io();
     let selectedUserKey = 'papa';
     let currentUser = null;
     let chats = [];
     let activeChatId = null;
     
-    // Voice Recorder Variables
     let mediaRecorder = null;
     let audioChunks = [];
     let isRecording = false;
@@ -138,48 +129,48 @@
         btn.classList.add('active');
     }
 
-    function login() {
+    async function login() {
         const pass = document.getElementById('passInput').value;
-        socket.emit('login', { userKey: selectedUserKey, password: pass });
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({userKey: selectedUserKey, password: pass})
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentUser = selectedUserKey;
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('myAvatar').innerText = data.userData.avatar;
+            document.getElementById('myName').innerText = data.userData.name;
+            loadChats();
+            setInterval(loadChats, 2000); // Автообновление каждые 2 секунды
+        } else {
+            alert(data.message);
+        }
     }
 
-    socket.on('login_response', (res) => {
-        if (res.success) {
-            currentUser = res.userKey;
-            document.getElementById('loginOverlay').style.display = 'none';
-            document.getElementById('myAvatar').innerText = res.userData.avatar;
-            document.getElementById('myName').innerText = res.userData.name;
-            socket.emit('get_chats', { userKey: currentUser });
-        } else {
-            alert(res.message);
-        }
-    });
-
-    socket.on('chats_list', (data) => {
-        chats = data;
-        renderChats();
-        if (chats.length > 0 && !activeChatId) selectChat(chats[0].id);
-    });
-
-    socket.on('chat_created', (newChat) => {
-        if (newChat.members.includes(currentUser)) {
-            chats.push(newChat);
+    async function loadChats() {
+        if (!currentUser) return;
+        const res = await fetch('/api/chats', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({userKey: currentUser})
+        });
+        const data = await res.json();
+        if (data.success) {
+            chats = data.chats;
             renderChats();
-            selectChat(newChat.id);
+            if (chats.length > 0 && !activeChatId) {
+                selectChat(chats[0].id);
+            } else if (activeChatId) {
+                renderMessages();
+            }
         }
-    });
-
-    socket.on('new_message', (data) => {
-        const chat = chats.find(c => c.id === data.chatId);
-        if (chat) {
-            chat.messages.push(data.message);
-            if (activeChatId === data.chatId) renderMessages();
-            renderChats();
-        }
-    });
+    }
 
     function renderChats() {
         const container = document.getElementById('chatList');
+        const scrollPos = container.scrollTop;
         container.innerHTML = '';
         chats.forEach(c => {
             const last = c.messages[c.messages.length - 1];
@@ -197,6 +188,7 @@
             `;
             container.appendChild(div);
         });
+        container.scrollTop = scrollPos;
     }
 
     function selectChat(id) {
@@ -211,9 +203,11 @@
 
     function renderMessages() {
         const container = document.getElementById('msgBox');
-        container.innerHTML = '';
         const chat = chats.find(c => c.id === activeChatId);
         if (!chat) return;
+
+        const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+        container.innerHTML = '';
 
         chat.messages.forEach(m => {
             const isMe = m.sender === currentUser;
@@ -226,7 +220,7 @@
                 if (m.file.type.startsWith('image/')) {
                     html += `<img src="${m.file.data}" style="max-width:100%; border-radius:6px; margin-top:5px;">`;
                 } else {
-                    html += `<a href="${m.file.data}" download="${m.file.name}" style="color:var(--accent); text-decoration:none;"><i class="fa-solid fa-file"></i> ${m.file.name}</a>`;
+                    html += `<a href="${m.file.data}" download="${m.file.name}" style="color:var(--accent);"><i class="fa-solid fa-file"></i> ${m.file.name}</a>`;
                 }
             }
             if (m.voice) {
@@ -236,31 +230,42 @@
             div.innerHTML = html;
             container.appendChild(div);
         });
-        container.scrollTop = container.scrollHeight;
+
+        if (isAtBottom) container.scrollTop = container.scrollHeight;
     }
 
-    function sendText() {
+    async function sendText() {
         const input = document.getElementById('msgInput');
         const text = input.value.trim();
         if (!text || !activeChatId) return;
 
         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        socket.emit('send_message', { chatId: activeChatId, sender: currentUser, text: text, time: time });
+        await fetch('/api/send_message', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({chatId: activeChatId, sender: currentUser, text: text, time: time})
+        });
         input.value = '';
+        loadChats();
     }
 
-    function sendFile(e) {
+    async function sendFile(e) {
         const file = e.target.files[0];
         if (!file || !activeChatId) return;
         const reader = new FileReader();
-        reader.onload = function(evt) {
+        reader.onload = async function(evt) {
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            socket.emit('send_message', {
-                chatId: activeChatId,
-                sender: currentUser,
-                file: { name: file.name, type: file.type, data: evt.target.result },
-                time: time
+            await fetch('/api/send_message', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    chatId: activeChatId,
+                    sender: currentUser,
+                    file: { name: file.name, type: file.type, data: evt.target.result },
+                    time: time
+                })
             });
+            loadChats();
         };
         reader.readAsDataURL(file);
     }
@@ -273,17 +278,22 @@
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
                 mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = () => {
+                mediaRecorder.onstop = async () => {
                     const blob = new Blob(audioChunks, { type: 'audio/webm' });
                     const reader = new FileReader();
-                    reader.onload = function(evt) {
+                    reader.onload = async function(evt) {
                         const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        socket.emit('send_message', {
-                            chatId: activeChatId,
-                            sender: currentUser,
-                            voice: evt.target.result,
-                            time: time
+                        await fetch('/api/send_message', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({
+                                chatId: activeChatId,
+                                sender: currentUser,
+                                voice: evt.target.result,
+                                time: time
+                            })
                         });
+                        loadChats();
                     };
                     reader.readAsDataURL(blob);
                 };
@@ -313,16 +323,24 @@
     function openModal() { document.getElementById('newChatModal').style.display = 'flex'; }
     function closeModal() { document.getElementById('newChatModal').style.display = 'none'; }
 
-    function confirmNewChat() {
+    async function confirmNewChat() {
         const selected = Array.from(document.querySelectorAll('.user-chk:checked')).map(c => c.value);
         if (!selected.includes(currentUser)) selected.push(currentUser);
         if (selected.length < 2) return alert('Выберите участников');
         
         const title = selected.join(' & ');
-        socket.emit('create_chat', { members: selected, title: title });
-        closeModal();
+        const res = await fetch('/api/create_chat', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({members: selected, title: title})
+        });
+        const data = await res.json();
+        if (data.success) {
+            closeModal();
+            loadChats();
+            selectChat(data.chat.id);
+        }
     }
 </script>
 </body>
 </html>
-
